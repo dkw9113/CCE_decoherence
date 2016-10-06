@@ -34,19 +34,19 @@ double omega(double magn_field){
 	return w;
 }
 double A(const Vector3d& r_iv1, const Vector3d& NV_loc, const Vector3d& NV_orient){
-	//Vector3d r_iv(0,0,0);
+	Vector3d r_iv(0,0,0);
 	//double b_sj, z, R, nu_0,b,psi_z,psi_xy,psi2,g_i;
 	double A1,b_sj;//,A11,A12;
 	//A11=0;
 	//A12=0;
-	//r_iv=(r_iv1-NV_loc);
+	r_iv=(r_iv1-NV_loc);
 	b_sj=-2*g13c*2.93501e-5; 
 
 /*	for (int i=0;i<3;i++){
 		printf("r_iv is [%f] .\n\n", r_iv[i]);
 	}*/
 
-	A1=-b_sj*g_71Ga*(1-3*((pow((((r_iv1-NV_loc).dot(NV_orient))/((r_iv1-NV_loc).norm()*(NV_orient.norm()))),2))/(pow((r_iv1-NV_loc).norm(),3))));
+	A1=(b_sj*(1-(3*(pow(((r_iv.dot(NV_orient))/(r_iv.norm()*(NV_orient.norm()))),2)))))/(pow(r_iv.norm(),3));
 	return A1;
 }
 double b(const Vector3d& r_i, const Vector3d& r_j,const Vector3d& NV_orient){
@@ -54,7 +54,7 @@ double b(const Vector3d& r_i, const Vector3d& r_j,const Vector3d& NV_orient){
 	double b_jj,b1;
 	//r_ij=(r_i-r_j); 
 	b_jj=1.5984568e-8*g13c*g13c;
-	b1=(b_jj*(1-3*((pow((((r_i-r_j).dot(NV_orient))/((r_i-r_j).norm()*(NV_orient.norm()))),2))/(pow((r_i-r_j).norm(),3)))));
+	b1=(b_jj*(1-3*((pow((((r_i-r_j).dot(NV_orient))/((r_i-r_j).norm()*(NV_orient.norm()))),2))))/(pow((r_i-r_j).norm(),3)));
 	return b1;
 }
 
@@ -74,11 +74,11 @@ cx_vec cce1(mat& hamplus1,mat& hamminus1, cx_mat& Uplus1,  cx_mat& Uminus1, Vect
 
 	ham1(hamminus1, -1., A, omega);
 	for(int i=0; i<t.size(); i++){
-	Uplus1 = expmat(-j*(t[i]/2)*hamplus1);
+	Uplus1 = expmat(-j*(t[i]/2)/hbar*hamplus1);
 
 	//Uplus21 = expmat(j*(t/2)*hamplus1);
 
-	Uminus1 = expmat(-j*(t[i]/2)*hamminus1);
+	Uminus1 = expmat(-j*(t[i]/2)/hbar*hamminus1);
 
 	//Uminus21 = expmat(j*(t/2)*hamminus1);
 
@@ -109,11 +109,11 @@ cx_vec cce2(mat& hamplus2,mat& hamminus2, cx_mat& Uplus2,  cx_mat& Uminus2, Vect
 	//cout<<"t.size(): "<<t.size()<<"\n";
 	for(int i=0; i<t.size(); i++){
 	//cout<<"loop start i:"<<i<<"\n";
-	Uplus2 = expmat(-j*(t[i]/2)*hamplus2);
+	Uplus2 = expmat(-j*(t[i]/2)/hbar*hamplus2);
 	//cout<<"Uplus2 created\n"<<Uplus2<<"\n";
 	//Uplus21 = expmat(j*(t/2)*hamplus1);
 
-	Uminus2 = expmat(-j*(t[i]/2)*hamminus2);
+	Uminus2 = expmat(-j*(t[i]/2)/hbar*hamminus2);
 	//cout<<"Uminus2 created\n"<<Uminus2<<"\n";
 	//Uminus21 = expmat(j*(t/2)*hamminus1);
 
@@ -131,7 +131,7 @@ vec cce2_anal(VectorXd& t, vector<double>A1, vector<double> omega, double b12){
 	double A=(A1[0]-A1[1])/2;
 	double w=(omega[0]-omega[1])/2;
 	for(int i=0;i<t.size();i++){
-		Wan[i]=1-16*C*C*A*A*((sin(t[i]/4*sqrt(4*C*C+(A-w)*(A-w))))*(sin(t[i]/4*sqrt(4*C*C+(A-w)*(A-w))))/(4*C*C+(A-w)*(A-w)))*((sin(t[i]/4*sqrt(4*C*C+(A+w)*(A+w))))*(sin(t[i]/4*sqrt(4*C*C+(A+w)*(A+w))))/(4*C*C+(A+w)*(A+w)));
+		Wan[i]=1-16*C*C*A*A*((sin(t[i]/4*sqrt(4*C*C+(A-w)*(A-w))/hbar))*(sin(t[i]/4*sqrt(4*C*C+(A-w)*(A-w))/hbar))/(4*C*C+(A-w)*(A-w)))*((sin(t[i]/4*sqrt(4*C*C+(A+w)*(A+w))/hbar))*(sin(t[i]/4*sqrt(4*C*C+(A+w)*(A+w))/hbar))/(4*C*C+(A+w)*(A+w)));
 		//cout<<"Wan[i]: "<<Wan[i]<<endl;
 	}
 	return Wan;
@@ -179,7 +179,7 @@ int main(){
 	j=0;
 	double b12;
 	double magn_field=3000*1e-4;
-	R=100*a0;
+	R=5*a0;
 	N=c13_loc.rows();
 	//cout<<N<<"\n";
 	cce_trunc=2;
@@ -212,7 +212,7 @@ int main(){
 	//A6.row(0)=A(location.row(i),...);
 	//cout<<"ROSJA1"<<"\n";
 	A1.push_back(A(c13_loc.row(i),NV_loc.row(0),NV_orient.row(0)));
-
+	//cout<<A1[0]<<endl;
 	omega1.push_back(omega(magn_field));
 	#if 0
 	for(int ik=0;ik<A1.size();ik++){
@@ -257,8 +257,11 @@ int main(){
 
 	W2=W1%W2;
 	//cout<<"W1: "<<"\t"<<"W2: "<<"\t"<<"\t"<<"Wan: "<<"Wan_py: "<<"\n";
+	
 	for(int i=0;i<t.size();i++){
-		//cout<<W1[i]<<"\t"<<W2[i]<<"\t"<<Wan[i]<<"\t"<<Wan_py(i,1)<<"\n";
-		cout<<t[i]<<"\t"<<Wan[i]<<"\t"<<Wan_py(i,1)<<"\n";
+		cout<<W1[i]<<"\t"<<W2[i]<<"\t"<<Wan[i]<<"\t"<<Wan_py(i,1)<<"\n";
+		//cout<<t[i]<<"\t"<<Wan[i]<<"\t"<<Wan_py(i,1)<<"\n";
 	}
+	
+	
 }
