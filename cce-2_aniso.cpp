@@ -225,7 +225,7 @@ int main(){
 	i=0;
 	j=0;
 	double b12;
-	double magn_field=3000*1e-4;
+	double magn_field=100*1e-4;
 	R=5*a0;
 	N=c13_loc.rows();
 	//cout<<N<<"\n";
@@ -248,9 +248,11 @@ int main(){
 	//mat Uplus22(4,4);
 	cx_mat Uminus2(4,4);
 	//mat Uminus22(4,4);
-	VectorXd t=Wan_py.col(0);
+	//VectorXd t=Wan_py.col(0);
+	VectorXd t=VectorXd::LinSpaced(100,0,800000);
 	//cout<<"ROSJA"<<"\n";
 	cx_vec W1(t.size());
+	cx_vec W11(t.size());
 	cx_vec W2(t.size());
 	vec Wan(t.size());
 	W1.ones();
@@ -275,8 +277,8 @@ int main(){
 	cout<<"\n";
 	#endif
 	//cout<<"ZIEMNIAKI"<<"\n";
-
-	W1=W1%cce1(hamplus1,hamminus1, Uplus1, Uminus1, t, Axz1[0],Ayz1[0],Azz1[0], omega1[0]);
+	W11=cce1(hamplus1,hamminus1, Uplus1, Uminus1, t, Axz1[0],Ayz1[0],Azz1[0], omega1[0]);
+	W1=W1%W11;
 	
 	//cout<<i<<"\n";
 	j=i+1;
@@ -297,7 +299,7 @@ int main(){
 
 	b12=b(c13_loc.row(i),c13_loc.row(j),NV_orient.row(0));
 	//cout<<b12<<"\n";
-	W2=W2%cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, Axz1, Ayz1, Azz1, omega1, b12);
+	W2=W2%cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, Axz1, Ayz1, Azz1, omega1, b12)/W11/cce1(hamplus1,hamminus1, Uplus1, Uminus1, t, Axz1[1],Ayz1[1],Azz1[1], omega1[1]);
 	//cout<<"ROSJA2"<<"\n";
 	Wan=Wan%cce2_anal(t, A1, omega1, b12);
 	A1.pop_back();
