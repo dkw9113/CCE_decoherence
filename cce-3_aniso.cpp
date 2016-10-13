@@ -304,7 +304,7 @@ int main(){
 	j=0;
 	k=0;
 	
-	double magn_field=100*1e-4;
+	double magn_field=0.3*1e-4;
 	R=5*a0;
 	N=c13_loc.rows();
 	//cout<<N<<"\n";
