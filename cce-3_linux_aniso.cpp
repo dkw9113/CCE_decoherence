@@ -6,11 +6,11 @@
 #include<stdlib.h>
 #include<fstream>
 #include<armadillo>
-#define EIGEN_USE_LAPACKE_STRICT
-#include "Dense"
+#include "Eigen/Dense"
 #include <string.h>
 #include <math.h>
-
+#define EIGEN_USE_LAPACKE
+#define EIGEN_USE_MKL_ALL
 #define hbar 0.66//ueV*ns
 #define mu0 4*M_PI*1E-05*1.602
 #define g_75As 0.95563
@@ -407,7 +407,7 @@ int main(){
 	bij.push_back(b(c13_loc.row(j),c13_loc.row(k),NV_orient.row(0)));
 	bij.push_back(b(c13_loc.row(i),c13_loc.row(k),NV_orient.row(0)));
 	W31=cce1(hamplus1,hamminus1, Uplus1, Uminus1, t, Axz1[2],Ayz1[2],Azz1[2], omega1[2]);
-	W3=W3%cce3(hamplus3, hamminus3, Uplus3, Uminus3, t, Axz1, Ayz1, Azz1, omega1, bij)/((W12/(W11%W21))%(cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, {Axz1[1],Axz1[2]}, {Ayz1[1],Ayz1[2]}, {Azz1[1],Azz1[2]}, {omega1[1],omega1[2]}, bij[1])/(W21%W31))%(cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, {Axz1[0], Axz1[2]}, {Ayz1[0], Ayz1[2]}, {Azz1[0], Azz1[2]}, {omega1[0], omega1[2]}, bij[2])/(W11%W31))%W11%W21%W31);
+	W3%cce3(hamplus3, hamminus3, Uplus3, Uminus3, t, Axz1, Ayz1, Azz1, omega1, bij)/((W21/(W11%W21))%(cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, {Axz1[1],Axz1[2]}, {Ayz1[1],Ayz1[2]}, {Azz1[1],Azz1[2]}, {omega1[1],omega1[2]}, bij[1])/(W21%W31))%(cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, {Axz1[0], Axz1[2]}, {Ayz1[0], Ayz1[2]}, {Azz1[0], Azz1[2]}, {omega1[0], omega1[2]}, bij[2])/(W11%W31))%W11%W21%W31);
 
 	A1.pop_back();
 	Axz1.pop_back();

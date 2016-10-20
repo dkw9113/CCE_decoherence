@@ -7,6 +7,7 @@
 #include<fstream>
 #include<armadillo>
 #define EIGEN_USE_LAPACKE_STRICT
+
 #include "Dense"
 #include <string.h>
 #include <math.h>
@@ -247,14 +248,14 @@ void ham4(mat& ham, double sign, vector<double> A, vector<double> omega, vector<
 	ham(11,14)=bij[4];
 	ham(12,9)=bij[4];
 	ham(14,11)=bij[4];
-	ham(2,3)=bij[5];
-	ham(3,2)=bij[5];
-	ham(6,7)=bij[5];
-	ham(7,6)=bij[5];
-	ham(10,11)=bij[5];
-	ham(11,10)=bij[5];
-	ham(14,15)=bij[5];
-	ham(15,14)=bij[5];
+	ham(1,2)=bij[5];
+	ham(2,1)=bij[5];
+	ham(5,6)=bij[5];
+	ham(6,5)=bij[5];
+	ham(9,10)=bij[5];
+	ham(10,9)=bij[5];
+	ham(13,14)=bij[5];
+	ham(14,13)=bij[5];
 }
 cx_vec cce4(mat& hamplus4,mat& hamminus4, cx_mat& Uplus4,  cx_mat& Uminus4, VectorXd& t, vector<double> A, vector<double> omega, vector<double> bij){
 	complex<double> j(0,1);
@@ -325,7 +326,7 @@ int main(){
 	k=0;
 	l=0;
 	double magn_field=3000*1e-4;
-	R=5*a0;
+	R=0.8;
 	N=c13_loc.rows();
 	//cout<<N<<"\n";
 	cce_trunc=2;
@@ -357,7 +358,7 @@ int main(){
 	cx_mat Uplus4(16,16);
 	cx_mat Uminus4(16,16);
 
-	VectorXd t=Wan_py.col(0);
+	VectorXd t=Wan_py.col(0);//.segment(30,10);
 	//cout<<"ROSJA"<<"\n";
 	cx_vec W1(t.size());
 	cx_vec W11(t.size());
@@ -405,7 +406,7 @@ int main(){
 	//cout<<"ZIEMNIAKI"<<"\n";
 	W11=cce1(hamplus1,hamminus1, Uplus1, Uminus1, t, A1[0], omega1[0]);
 	W1=W1%W11;
-	
+	//cout<<"CCE-1: len(A)\t"<<A1.size()<<"\t len(omega)\t"<<omega1.size()<<"\n";
 	//cout<<i<<"\n";
 	j=i+1;
 	while(j<N){if((c13_loc.row(j)-c13_loc.row(i)).norm()<R){
@@ -421,12 +422,14 @@ int main(){
 	#endif
 
 	bij.push_back(b(c13_loc.row(i),c13_loc.row(j),NV_orient.row(0)));
+
 	//cout<<b12<<"\n";
 	W12=cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, A1, omega1, bij[0]);
 	W21=cce1(hamplus1,hamminus1, Uplus1, Uminus1, t, A1[1], omega1[1]);
 	W2=W2%(W12/(W11%W21));
 	//cout<<"ROSJA2"<<"\n";
 	Wan=Wan%cce2_anal(t, A1, omega1, bij[0]);
+	//cout<<"CCE-2: len(A)\t"<<A1.size()<<"\t len(omega)\t"<<omega1.size()<<"\t len(bij)\t"<<bij.size()<<endl;
 	k=j+1;
 	while(k<N){if((c13_loc.row(k)-c13_loc.row(i)).norm()<R){
 	A1.push_back(A(c13_loc.row(k),NV_loc.row(0),NV_orient.row(0)));
@@ -438,7 +441,8 @@ int main(){
 	W22=cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, {A1[1],A1[2]}, {omega1[1],omega1[2]}, bij[1]);
 	W32=cce2(hamplus2, hamminus2, Uplus2, Uminus2, t, {A1[0], A1[2]}, {omega1[0], omega1[2]}, bij[2]);
 	W13=cce3(hamplus3, hamminus3, Uplus3, Uminus3, t, A1,omega1, bij);
-	W3=W3%W13/((W21/(W11%W21))%(W22/(W21%W31))%(W32/(W11%W31))%W11%W21%W31);
+	W3=W3%(W13/((W12/(W11%W21))%(W22/(W21%W31))%(W32/(W11%W31))%W11%W21%W31));
+	//cout<<"CCE-3: len(A)\t"<<A1.size()<<"\t len(omega)\t"<<omega1.size()<<"\t len(bij)\t"<<bij.size()<<endl;
 	l=k+1;
 	while(l<N){if((c13_loc.row(l)-c13_loc.row(i)).norm()<R){
 	A1.push_back(A(c13_loc.row(l),NV_loc.row(0),NV_orient.row(0)));
@@ -456,7 +460,13 @@ int main(){
 	W33=cce3(hamplus3,hamminus3,Uplus3,Uminus3,t,{A1[0],A1[2],A1[3]},{omega1[0],omega1[2],omega1[3]},{bij[2],bij[5],bij[3]});
 	W43=cce3(hamplus3,hamminus3,Uplus3,Uminus3,t,{A1[1],A1[2],A1[3]},{omega1[1],omega1[2],omega1[3]},{bij[1],bij[5],bij[4]});
 	/*!!!!!!!!!!!!!!!HERE START CCE-4!!!!!!!!!!!!!!!!!*/
-	W4=W4%cce4(hamplus4,hamminus4,Uplus4,Uminus4, t, A1, omega1, bij)/((W13/((W12/(W11%W21))%(W22/(W21%W31))%(W32/(W11%W31))%W11%W21%W31))%(W23/((W12/(W11%W21))%(W42/(W11%W41))%(W52/(W21%W41))%W11%W21%W41))%(W33/((W32/(W11%W31))%(W42/(W11%W41))%(W62/(W31%W41))%W11%W31%W41))%(W43/((W22/(W21%W31))%(W52/(W21%W41))%(W62/(W31%W41))%W21%W31%W41))%(W12/(W11%W21))%(W22/(W21%W31))%(W32/(W11%W31))%(W42/(W11%W41))%(W52/(W21%W41))%(W62/(W31%W41))%W11%W21%W31%W41);
+	W4=W4%(cce4(hamplus4,hamminus4,Uplus4,Uminus4, t, A1, omega1, bij)/((W13/((W12/(W11%W21))%(W22/(W21%W31))%(W32/(W11%W31))%W11%W21%W31))%(W23/((W12/(W11%W21))%(W42/(W11%W41))%(W52/(W21%W41))%W11%W21%W41))%(W33/((W32/(W11%W31))%(W42/(W11%W41))%(W62/(W31%W41))%W11%W31%W41))%(W43/((W22/(W21%W31))%(W52/(W21%W41))%(W62/(W31%W41))%W21%W31%W41))%(W12/(W11%W21))%(W22/(W21%W31))%(W32/(W11%W31))%(W42/(W11%W41))%(W52/(W21%W41))%(W62/(W31%W41))%W11%W21%W31%W41));
+	//cout<<"CCE-4: len(A)\t"<<A1.size()<<"\t len(omega)\t"<<omega1.size()<<"\t len(bij)\t"<<bij.size()<<endl;
+	bij.pop_back();
+	bij.pop_back();
+	bij.pop_back();
+	A1.pop_back();
+	omega1.pop_back();
 	}
 	l++;	
 	}
@@ -478,14 +488,16 @@ int main(){
 	A1.pop_back();
 	omega1.pop_back();
 	i++;
+	//cout<<"going back to CCE-1: len(A)\t"<<A1.size()<<"\t len(omega)\t"<<omega1.size()<<"\t len(bij)\t"<<bij.size()<<endl;
 	}
 
 	W2=W1%W2;
 	W3=W2%W3;
+	W4=W3%W4;
 	//cout<<"W1: "<<"\t"<<"W2: "<<"\t"<<"\t"<<"Wan: "<<"Wan_py: "<<"\n";
 	
 	for(int i=0;i<t.size();i++){
-		cout<<W1[i]<<"\t"<<W2[i]<<"\t"<<W3[i]<<"\t"<<W4[i]<<"\t"<<Wan[i]<<"\t"<<Wan_py(i,1)<<"\n";
+		cout<<t[i]<<"\t"<<W1[i]<<"\t"<<W2[i]<<"\t"<<W3[i]<<"\t"<<W4[i]<<"\t"<<Wan[i]<<"\t"<<Wan_py(i,1)<<"\n";
 		//cout<<t[i]<<"\t"<<Wan[i]<<"\t"<<Wan_py(i,1)<<"\n";
 	}
 	
