@@ -230,7 +230,7 @@ int main(){
 	j=0;
 	k=0;
 	double magn_field=3000*1e-4;
-	R=7*a0;
+	R=0.8;
 	N=c13_loc.rows();
 	//cout<<N<<"\n";
 	cce_trunc=2;
@@ -257,7 +257,7 @@ int main(){
 	cx_mat Uminus3(8,8);
 	//VectorXd t=Wan_py.col(0);
 	//VectorXd t=Wan_py.col(0);//.segment(30,60);
-	VectorXd t=VectorXd::LinSpaced(10,0,800000);
+	VectorXd t=VectorXd::LinSpaced(101,0,800000);
 	//cout<<"ROSJA"<<"\n";
 	cx_vec W1(t.size());
 	cx_vec W11(t.size());
