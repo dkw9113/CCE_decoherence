@@ -21,7 +21,7 @@
 #define m_e 9.10938356e-31
 #define m_p 1.672621898e-27
 #define mu_e 58 //ueV/T
-#define mu_n mu_e*m_e/m_p
+#define mu_n 0.0315877872406045
 #define a0 0.35668
 
 //TAKEN FROM nuclear_bath_QD_NNA_isotope_separate.py in spin_32 subfolde
